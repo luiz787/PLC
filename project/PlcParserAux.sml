@@ -1,12 +1,19 @@
 (* Plc Parser Aux *)
 
-(* Creat the body of a function expression. *)
-fun makeFunAux (n: int, xs: (plcType * string) list, e: expr): expr =
-    e (* TODO *)
-
 (* Create the list of arguments of a function. *)
-fun makeType (args: (plcType * string) list): plcType =
-    ListT [] (* TODO *)
+fun makeType (args: (plcType * string) list): plcType = 
+let
+  fun makeType' [] = []
+    | makeType' ((ty, _)::arr) = (ty::(makeType' arr))
+in
+  (ListT (makeType' args))
+end;
+
+(* Creat the body of a function expression. *)
+fun makeFunAux (n: int, xs: (plcType * string) list, e: expr) = 
+case xs of
+    [] => e
+  | (ty, id)::xs => Let(id, Item(n, Var "$list"), makeFunAux (n + 1, xs, e));
 
 (* Create a function expression. *)
 fun makeFun (f: string, xs: (plcType * string) list, rt: plcType, e1: expr, e2: expr): expr =
@@ -36,3 +43,9 @@ fun makeAnon (xs:(plcType * string) list, e:expr):expr =
           Anon(t,"$list",e')
         end
       end;
+
+
+fun makeArgs (typedVar: (plcType * string), typedVarList: (plcType * string) list) : (plcType * string) list = 
+case typedVarList of
+                [] => [typedVar]
+              | l => typedVar::l;

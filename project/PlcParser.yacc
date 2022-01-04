@@ -6,7 +6,7 @@
 
 %term VAR
     | FUN
-    | FUNREC
+    | REC
     | EQ
     | COLON
     | SEMICOLON
@@ -17,7 +17,6 @@
     | WITH
     | UNDERSCORE
     | EXCL
-    | MINUS
     | HD
     | TL
     | ISE
@@ -58,15 +57,28 @@
     | AtomicExpr of expr
     | AppExpr of expr
     | Const of expr
-    | MatchExpr of (expr option * expr)
+    | Comps of expr list
+    | MatchExpr of (expr option * expr) list
     | CondExpr of (expr option)
     | Args of (plcType * string) list
-    | Params of expr
+    | Params of (plcType * string) list
     | TypedVar of plcType * string
     | Type of plcType
     | AtomicType of plcType
     | Types of plcType list
-    | CompositeExpr of expr list
+    | CompositeExpr of expr list (* PODE SER A MESMA COISA DE Comps *)
+
+%right SEMICOLON ARROW
+%nonassoc IF
+%left ELSE
+%left AND
+%left EQ NEQ
+%left LT LTE
+%right DOUBLECOLON
+%left PLUS MINUS
+%left TIMES DIV
+%nonassoc EXCL HD TL ISE PRINT NAME
+%left LSQBRACKET
 
 %eop EOF
 
@@ -74,12 +86,14 @@
 
 %start Prog
 
-Prog : Expr(Expr)
-    | Decl(Decl)
+%%
+
+Prog : Expr (Expr)
+    | Decl (Decl)
 
 Decl : VAR NAME EQ Expr SEMICOLON Prog(Let(NAME, Expr, Prog))
     | FUN NAME Args EQ Expr SEMICOLON Prog(Let(NAME, makeAnon(Args, Expr), Prog))
-    | FUN REC NAME Args COLON Type Type Expr SEMICOLON Prog(makeFun(NAME, Args, Type, Expr, Prog))
+    | FUN REC NAME Args COLON Type EQ Expr SEMICOLON Prog(makeFun(NAME, Args, Type, Expr, Prog))
 
 Expr : AtomicExpr (AtomicExpr)
     | AppExpr (AppExpr)
@@ -104,12 +118,12 @@ Expr : AtomicExpr (AtomicExpr)
     | Expr SEMICOLON Expr (Prim2(";", Expr1, Expr2))
     | Expr LSQBRACKET CINT RSQBRACKET (Item(CINT, Expr))
 
-AtomicExpr : Const(Const)
-    | NAME Var(NAME)
+AtomicExpr : Const (Const)
+    | NAME (Var NAME)
     | LBRACE Prog RBRACE (Prog)
     | LPAREN Expr RPAREN (Expr)
-    | LPAREN Comps RPAREN (List(Comps))
-    | FN Args FATARROW Expr END makeAnon(Args, Expr)
+    | LPAREN Comps RPAREN (List Comps)
+    | FN Args FATARROW Expr END (makeAnon(Args, Expr))
 
 AppExpr : AtomicExpr AtomicExpr (Call(AtomicExpr1, AtomicExpr2))
     | AppExpr AtomicExpr (Call(AppExpr, AtomicExpr))
@@ -120,35 +134,32 @@ Const : TRUE (ConB(true))
     | LPAREN RPAREN (List([]))
     | LPAREN Type LSQBRACKET RSQBRACKET RPAREN (ESeq(Type))
 
-Comps : Expr COMMA Expr (Expr1::Expr2)
+Comps : Expr COMMA Expr (Expr1::Expr2::[])
     | Expr COMMA Comps (Expr::Comps)
 
 MatchExpr : END ([])
     | PIPE CondExpr ARROW Expr MatchExpr ((CondExpr, Expr)::MatchExpr)
 
-CondExpr : Expr = (SOME Expr)
+CondExpr : Expr (SOME Expr)
     | UNDERSCORE (NONE)
 
 Args : LPAREN RPAREN ([])
     | LPAREN Params RPAREN (Params)
 
-Params : TypedVar (TypedVar)
-    | TypedVar COMMA Params (TypedVar::Params)
+Params : TypedVar (makeArgs(TypedVar, []))
+    | TypedVar COMMA Params (makeArgs(TypedVar, Params))
 
-TypedVar : Type NAME (Type, Var(NAME))
+TypedVar : Type NAME ((Type, NAME))
 
 Type : AtomicType (AtomicType)
     | LPAREN Types RPAREN (ListT(Types))
     | LSQBRACKET Type RSQBRACKET (SeqT(Type))
     | Type ARROW Type (FunT(Type1, Type2))
 
-AtomicType :
-    | NILTYPE (ListT [])
+AtomicType : NILTYPE (ListT [])
     | BOOLTYPE (BoolT)
     | INTTYPE (IntT)
     | LPAREN Type RPAREN (Type)
 
-Types : Type COMMA Type (Type1::Type2)
+Types : Type COMMA Type (Type1::Type2::[])
     | Type COMMA Types (Type::Types)
-
-%%

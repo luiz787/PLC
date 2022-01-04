@@ -22,7 +22,7 @@ fromString "15";
 fromString "true";
 fromString "()";
 fromString "(6,false)[1]";
-fromString "([Bool] [])";
+fromString "([ Bool ] [])";
 fromString "print x; true";
 fromString "3::7::t";
 fromString "fn (Int x) => -x end";
@@ -31,7 +31,13 @@ fromString "fun f(Int x) = x; f(1)";
 fromString "match x with | 0 -> 1| _ -> -1 end";
 fromFile ("example.plc");
 
-use "testParserCases.sml"
+use "testParserCases.sml";
 
-(* Try to add a systematic way of using the test cases in
-   testParserCases to stress test your parser *)
+
+val results = map (fn (s,e) => (fromString s) = e) cases;
+
+fun allTrue [] = false
+  | allTrue (x::[]) = x
+  | allTrue (x::t) = x andalso allTrue(t);
+
+allTrue results;

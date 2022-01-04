@@ -2,15 +2,15 @@
 
 (* User declarations *)
 
-open Tokens
-type pos = int
-type slvalue = Tokens.svalue
-type ('a,'b) token = ('a,'b) Tokens.token
-type lexresult = (slvalue, pos)token
+open Tokens;
+type pos = int;
+type slvalue = Tokens.svalue;
+type ('a,'b) token = ('a,'b) Tokens.token;
+type lexresult = (slvalue, pos)token;
 
 (* A function to print a message error on the screen. *)
-val error = fn x => TextIO.output(TextIO.stdOut, x ^ "\n")
-val lineNumber = ref 0
+val error = fn x => TextIO.output(TextIO.stdOut, x ^ "\n");
+val lineNumber = ref 0;
 
 (* Get the current line being read. *)
 fun getLineAsString() =
@@ -18,7 +18,7 @@ fun getLineAsString() =
         val lineNum = !lineNumber
     in
         Int.toString lineNum
-    end
+    end;
 
 (* Name to token *)
 
@@ -34,6 +34,7 @@ fun selectToken (s, lpos, rpos) =
 		| "if" => IF(lpos, rpos)
 		| "Int" => INTTYPE(lpos, rpos)
 		| "ise" => ISE(lpos, rpos)
+		| "match" => MATCH(lpos, rpos)
 		| "Nil" => NILTYPE(lpos, rpos)
 		| "print" => PRINT(lpos, rpos)
 		| "rec" => REC(lpos, rpos)
@@ -43,28 +44,29 @@ fun selectToken (s, lpos, rpos) =
 		| "var" => VAR(lpos, rpos)
 		| "with" => WITH(lpos, rpos)
 		| "_" => UNDERSCORE(lpos, rpos)
-		|  _  => NAME(s, lpos, rpos)
+		|  _  => NAME(s, lpos, rpos);
 
 
 
 
 (* Define what to do when the end of the file is reached. *)
-fun eof () = Tokens.EOF(0,0)
+fun eof () = Tokens.EOF(0,0);
 
 (* Initialize the lexer. *)
-fun init() = ()
+fun init() = ();
+
 %%
+
 %header (functor PlcLexerFun(structure Tokens: PlcParser_TOKENS));
 
-%%
-
 digit=[0-9];
-ws = [\ \t];
-name = [A-z_][A-z_0-9]*
+ws=[\ \t];
+name=[a-zA-Z_][a-zA-Z_0-9]*;
 
 %%
+
 \n       => (lineNumber := !lineNumber + 1; lex());
-{name}   => (selectToken (yytex, yypos, yypos))
+{name}   => (selectToken (yytext, yypos, yypos));
 {ws}+    => (lex());
 {digit}+ => (CINT(valOf (Int.fromString yytext), yypos, yypos));
 "="      => (EQ(yypos,yypos));
@@ -91,4 +93,4 @@ name = [A-z_][A-z_0-9]*
 "->"     => (ARROW(yypos, yypos));
 "=>"     => (FATARROW(yypos, yypos));
 "."      => (error("\n***Lexer error: invalid character ***\n"); 
-raise Fail("Lexer error: invalid character " ^ yytex));
+raise Fail("Lexer error: invalid character " ^ yytext));
