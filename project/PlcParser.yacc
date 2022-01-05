@@ -66,7 +66,6 @@
     | Type of plcType
     | AtomicType of plcType
     | Types of plcType list
-    | CompositeExpr of expr list (* PODE SER A MESMA COISA DE Comps *)
 
 %right SEMICOLON ARROW
 %nonassoc IF
