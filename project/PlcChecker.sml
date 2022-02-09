@@ -21,6 +21,28 @@ fun teval (e:expr) (env: plcType env) : plcType =
 	case e of
 		 Var x => lookup env x
 		| ConI _ => IntT
+		| ConB _ => BoolT
+		| ESeq _ => ListT []
+		| List(explist) =>
+			let
+				fun listType (explist: expr list) (env: plcType env): plcType list =
+					case explist of
+						[] => []
+						| h::[] => [teval h env]
+						| h::t =>
+							let
+								val t1 = teval h env
+								val rest = listType t env
+							in
+								t1::rest
+							end
+			in
+				let
+					val exptypes = listType explist env
+				in
+					ListT exptypes
+				end
+			end
 		| Prim1(opr, e1) =>
 				let
 					val t1 = teval e1 env

@@ -20,10 +20,11 @@ use "PlcChecker.sml";
 use "PlcInterp.sml";
 use "Plc.sml";
 
-val abs = fromFile "tests/t1.plc";
+val abs = fromFile "tests/t2.plc";
 val venv = [];
 val v = teval abs venv
 
+(*
 val omg =
 let
     val k = teval abs []
@@ -31,3 +32,4 @@ in
     abs
 end
 handle Debug e => e;
+*)
