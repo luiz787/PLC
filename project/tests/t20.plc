@@ -1,0 +1,4 @@
+var x = 1::2::([Int] []);
+var y = 3::4::([Int] []);
+var k = x = y;
+k

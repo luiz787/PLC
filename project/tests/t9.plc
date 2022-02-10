@@ -1,0 +1,1 @@
+match 4 with | 1 -> false | 2 -> false | 4 -> true | _ -> false end

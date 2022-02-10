@@ -1,0 +1,4 @@
+fun f(Int z) = z;
+fun g(Int z) = z+1;
+
+f = g

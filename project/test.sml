@@ -1,4 +1,5 @@
 (* Infrastructure to run the Plc interpreter *)
+(* TODO: chamar run ao invés de teval/eval  *)
 
 CM.make("$/basis.cm");
 CM.make("$/ml-yacc-lib.cm");
@@ -20,9 +21,13 @@ use "PlcChecker.sml";
 use "PlcInterp.sml";
 use "Plc.sml";
 
-val abs = fromFile "tests/t2.plc";
-val venv = [];
-val v = teval abs venv
+val abs = fromFile "tests/t20.plc";
+(* val venv = [];
+val v = teval abs venv *)
+
+run abs
+
+(* TODO deletar o código abaixo. Pode ser útil para debugar então deixei comentado por enquanto. *)
 
 (*
 val omg =

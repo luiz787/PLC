@@ -1,0 +1,2 @@
+fun rec f1(Int x):Int = true;
+f1(12)

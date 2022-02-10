@@ -1,0 +1,3 @@
+var x = 1::2::([Int] []);
+var y = hd(x);
+y
