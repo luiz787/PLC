@@ -13,7 +13,6 @@ exception CallTypeMisM
 exception NotFunc
 exception ListOutOfRange
 exception OpNonList
-exception Debug of expr
 
 fun isEqualityType (t: plcType): bool =
 	case t of
