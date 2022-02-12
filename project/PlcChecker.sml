@@ -149,13 +149,13 @@ fun teval (e:expr) (env: plcType env) : plcType =
 				val argType = teval e2 env
 			in
 				case calleeType of
-				FunT (calleeArgType, _) => 
+				FunT (calleeArgType, fnRetType) => 
 					let
 						val equal = argType = calleeArgType
 					in
 						if equal
 						then
-							argType
+							fnRetType
 						else
 							raise CallTypeMisM
 					end
