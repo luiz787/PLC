@@ -25,7 +25,13 @@ fun isEqualityType (t: plcType): bool =
 
 fun teval (e:expr) (env: plcType env) : plcType =
 	case e of
-		 Var x => lookup env x
+		 Var x => 
+		 	let
+			 	val typ = lookup env x
+				handle SymbolNotFound => raise UnknownType
+			in
+				typ
+			end
 		| ConI _ => IntT
 		| ConB _ => BoolT
 		| ESeq (SeqT st) => SeqT st
