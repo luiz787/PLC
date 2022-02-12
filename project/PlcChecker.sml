@@ -13,6 +13,7 @@ exception CallTypeMisM
 exception NotFunc
 exception ListOutOfRange
 exception OpNonList
+exception Debug of expr
 
 fun isEqualityType (t: plcType): bool =
 	case t of
@@ -29,38 +30,48 @@ fun teval (e:expr) (env: plcType env) : plcType =
 		| ConI _ => IntT
 		| ConB _ => BoolT
 		| ESeq (SeqT st) => SeqT st
-		| ESeq (_) => raise EmptySeq
-		| List(explist) =>
-			let
-				fun listType (explist: expr list) (env: plcType env): plcType list =
-					case explist of
-						[] => []
-						| h::[] => [teval h env]
-						| h::t =>
-							let
-								val t1 = teval h env
-								val rest = listType t env
-							in
-								t1::rest
-							end
-			in
-				let
-					val exptypes = listType explist env
-				in
-					ListT exptypes
-				end
-			end
+		| List(explist) => ListT (map (fn e => teval e env) explist)
 		| Prim1(opr, e1) =>
 				let
 					val t1 = teval e1 env
 				in
-					case (opr, t1) of
-						("print", _) => ListT []
-						| ("!", BoolT) => BoolT
-						| ("-", IntT) => IntT
-						| ("hd", SeqT(et)) => et
-						| ("tl", SeqT(et)) => et
-						| ("ise", SeqT(et)) => BoolT
+					case (opr) of
+						("print") => ListT []
+						| ("!") => if t1 = BoolT then BoolT else raise UnknownType
+						| ("-") => if t1 = IntT then IntT else raise UnknownType
+						| ("hd") =>
+							let
+							in
+								case e1 of
+									ESeq(_) => raise EmptySeq
+									| _ => 
+										let
+										in
+											case t1 of
+												SeqT(st) => st
+												| _ => raise UnknownType
+										end
+							end
+						| ("tl") =>
+							let
+							in
+								case e1 of
+									ESeq(_) => raise EmptySeq
+									| _ => 
+										let
+										in
+											case t1 of
+												SeqT(st) => SeqT(st)
+												| _ => raise UnknownType
+										end
+							end
+						| ("ise") => 
+							let
+							in
+								case t1 of
+									SeqT(et) => BoolT
+									| _ => raise UnknownType
+							end
 						| _ => raise UnknownType
 				end
 		| Prim2(opr, e1, e2) =>
@@ -73,8 +84,8 @@ fun teval (e:expr) (env: plcType env) : plcType =
 					| ("/" , IntT, IntT) => IntT
 					| ("+" , IntT, IntT) => IntT
 					| ("-" , IntT, IntT) => IntT
-					| ("<", IntT, IntT) => IntT
-					| ("<=", IntT, IntT) => IntT
+					| ("<", IntT, IntT) => BoolT
+					| ("<=", IntT, IntT) => BoolT
 					| (";" , _ , _)    => t2
 					| ("&&", BoolT, BoolT) => BoolT
 					| ("::", _, SeqT(et)) =>
@@ -124,7 +135,7 @@ fun teval (e:expr) (env: plcType env) : plcType =
 						FunT (s, btype)
 					end
 				end
-		| Letrec(fname, ftype, argname, argtype, fbody, e2) =>
+		| Letrec(fname, argtype, argname, ftype, fbody, e2) =>
 			let
 				val providedFunType = FunT (argtype, ftype)
 			in
@@ -198,7 +209,7 @@ fun teval (e:expr) (env: plcType env) : plcType =
 					
 					fun matchBodyExpressionMapper matchArm =
 						let
-							val (mArmExp, mArmBody) = matchArm
+							val (_, mArmBody) = matchArm
 						in
 							teval mArmBody env
 						end
@@ -240,16 +251,9 @@ fun teval (e:expr) (env: plcType env) : plcType =
 					end
 				end
 			end
-		| Item(pos, List(exprlist)) =>
+		| Item(pos, expr) =>
 			let
-				val atpos = List.nth (exprlist, (pos - 1))
-				handle Subscript => raise ListOutOfRange
-			in
-				teval atpos env
-			end
-		| Item(pos, Var (x)) =>
-			let
-				val tt = teval (Var x) env
+				val tt = teval expr env
 			in
 				case tt of
 					ListT (exprlist) =>
@@ -261,4 +265,3 @@ fun teval (e:expr) (env: plcType env) : plcType =
 						end
 					| _ => raise OpNonList 
 			end
-		| Item(pos, _) => raise OpNonList

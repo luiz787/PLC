@@ -1,16 +1,11 @@
-(* Plc interpreter main file
-
-TODO: descomentar linhas 8 e 10 para produzir a saída esperada
-TODO: descomentar as linhas 32-36 para as exceções do interpretador (e remover ponto e vírgula da linha 28)
-*)
+(* Plc interpreter main file *)
 
 fun run(e: expr) =
     let
         val eType = teval e []
-        (* val eValue = eval e [] *)
+        val eValue = eval e []
     in
-        (* (val2string eValue) ^ " : " ^ (type2string eType) *)
-        type2string eType
+        (val2string eValue) ^ " : " ^ (type2string eType)
     end
     handle EmptySeq => "Plc Checker: Empty sequence should have a sequence type."
         | UnknownType => "Plc Checker: Unknown operator, or type error."
@@ -25,12 +20,8 @@ fun run(e: expr) =
         | MatchResTypeDiff => "Plc Checker: 'match' result types differ."
         | ListOutOfRange => "Plc Checker: List index out of range."
         | OpNonList => "Plc Checker: Selection with operator # applied to non-list."
-        | SymbolNotFound => "Symbol not found.";
-        
-        
-        
-        (*| Impossible => "Plc Interp: Impossible to evaluate expression."
+        | SymbolNotFound => "Symbol not found."
+        | Impossible => "Plc Interp: Impossible to evaluate expression."
         | HDEmptySeq => "Plc Interp: 'hd' empty sequence argument."
         | TLEmptySeq => "Plc Interp: 'tl' empty sequence argument."
-        | ValueNotFoundInMatch => "Plc Interp: value not found in match."
-        | NotAFunc => "Plc Interp: eval Call: not a function."; *)
+        | ValueNotFoundInMatch => "Plc Interp: value not found in match.";
