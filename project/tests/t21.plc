@@ -1,0 +1,2 @@
+fun f (Int x) = {fun g(Int y) = x+y; g};
+f(3)(4)
