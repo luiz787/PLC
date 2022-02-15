@@ -8,7 +8,13 @@ fun eval (expression : expr) (env : plcVal env) : plcVal =
 case expression of
     ConI n => IntV n
   | ConB b => BoolV b
-  | Var x => lookup env x
+  | Var x =>
+		 	let
+			 	val plcV = lookup env x
+				handle SymbolNotFound => raise Impossible
+			in
+				plcV
+			end
   | List a => (case a of
                     [] => ListV []
                   | l => ListV (List.map (fn x => eval x env) l))
